@@ -19,7 +19,7 @@ A Python/GUI tool for [Siril](https://siril.org/) that reads `.fit` / `.fits` fi
 
 ## Prerequisites & Requirements
 
-This script requires Python 3.8+ and the following Python packages:
+This script requires Python 3.12+ and the following Python packages:
 
 * **`astropy`** (required for FITS header reading)
 
@@ -45,11 +45,12 @@ To make this script accessible directly from the **Scripts** menu or executable 
 
    * **Linux**: `~/.config/siril/scripts/` or `~/.local/share/siril/scripts/`
 
-   * **macOS**: `~/Library/Application Support/org.siril.siril/scripts/`
+   * **macOS**: `~/Library/Application Support/org.siril.Siril/siril-scripts/`
+   ~/Library/Application Support/org.siril.S/Applications/Siril.app/Contents/MacOS/../Resources/share/siril/scriptsiril/scripts
 
    * **Windows**: `%APPDATA%\siril\scripts\`
 
-   * **User Custom Directory**: You can also use any custom folder on your system by configuring it directly inside Siril under **Preferences** -> **Scripts** -> **Script Search Directories** (or setting `scripts_user`).
+   * **User Custom Directory**: You can also use any custom folder on your system by configuring it directly inside Siril under **Preferences** -> **Scripts** -> **Script Storage Directories** (or setting `scripts_user`).
 
 2. Save the Python script (e.g., `fmso.py`) into your chosen script directory.
 
