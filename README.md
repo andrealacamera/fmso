@@ -104,3 +104,7 @@ Andrea La Camera [TEIGA](https://teiga.it).
 ## License
 
 MIT License. Free to use, modify, and distribute.
+
+## Updated
+
+Last update 2026-10-17
