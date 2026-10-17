@@ -60,12 +60,12 @@ class FitsOrganizerTk:
         self.folder_prefix_entry.insert(0, "Obs_")  # Default value
         self.folder_prefix_entry.pack(side=tk.LEFT, fill=tk.X, expand=True, padx=5)
 
-        # File Prefix Entry
+        # File Filter Prefix Entry
         prefix_frame = ttk.Frame(main_frame)
         prefix_frame.pack(fill=tk.X, pady=4)
-        ttk.Label(prefix_frame, text="File Prefix:", width=15, anchor="w").pack(side=tk.LEFT)
+        ttk.Label(prefix_frame, text="File Filter Prefix:", width=15, anchor="w").pack(side=tk.LEFT)
         self.prefix_entry = ttk.Entry(prefix_frame)
-        self.prefix_entry.insert(0, "Light_")  # Default value
+        self.prefix_entry.insert(0, "Light_")  # Default filter value
         self.prefix_entry.pack(side=tk.LEFT, fill=tk.X, expand=True, padx=5)
 
         # Action Buttons (Run and Cancel/Close)
@@ -84,7 +84,6 @@ class FitsOrganizerTk:
         self.log_area.pack(fill=tk.BOTH, expand=True, pady=2)
 
     def _initialize_defaults(self):
-        # Determine working directory: Siril current working dir or OS current dir
         initial_dir = os.getcwd()
         if SIRIL_AVAILABLE:
             try:
@@ -127,7 +126,7 @@ class FitsOrganizerTk:
                 return None
 
             obs_time = datetime.fromisoformat(date_str.replace("Z", ""))
-            # 12-hour offset groups files across midnight (23:14, 23:55, 00:13) into the starting evening
+            # 12-hour offset groups files across midnight into the starting date
             return (obs_time - timedelta(hours=12)).strftime("%Y-%m-%d")
 
     def process_files(self):
@@ -139,7 +138,7 @@ class FitsOrganizerTk:
         base_input = self.input_entry.get().strip()
         base_output = self.output_entry.get().strip()
         folder_prefix = self.folder_prefix_entry.get().strip()
-        file_prefix = self.prefix_entry.get().strip()
+        file_filter_prefix = self.prefix_entry.get().strip()
 
         if not base_input or not base_output:
             messagebox.showerror("Missing Information", "Please select both Input and Output folders.")
@@ -149,14 +148,21 @@ class FitsOrganizerTk:
             self.log(f"Error: Input folder does not exist: {base_input}")
             return
 
-        # Read FITS directly from input directory
-        fits_files = glob.glob(os.path.join(base_input, "*.fit*"))
+        # Fetch all FITS files in the input folder
+        all_fits = glob.glob(os.path.join(base_input, "*.fit*"))
+
+        # Filter files starting with the specified file filter prefix
+        if file_filter_prefix:
+            fits_files = [f for f in all_fits if os.path.basename(f).startswith(file_filter_prefix)]
+        else:
+            fits_files = all_fits
+
         if not fits_files:
-            self.log(f"No FITS files (.fit / .fits) found directly in: {base_input}")
+            self.log(f"No FITS files matching prefix '{file_filter_prefix}' found in: {base_input}")
             return
 
-        self.log(f"Processing {len(fits_files)} FITS files...")
-        self.log(f"Folder Prefix: '{folder_prefix}' | File Prefix: '{file_prefix}'\n")
+        self.log(f"Found {len(fits_files)} matching FITS files out of {len(all_fits)} total.")
+        self.log(f"Folder Prefix: '{folder_prefix}' | Filter Prefix: '{file_filter_prefix}'\n")
         success_count = 0
 
         for file_path in fits_files:
@@ -170,22 +176,15 @@ class FitsOrganizerTk:
                 dest_folder = os.path.join(base_output, folder_name)
                 os.makedirs(dest_folder, exist_ok=True)
 
-                original_name = os.path.basename(file_path)
-
-                # Apply file prefix to target symlink filename if not already present
-                if file_prefix and not original_name.startswith(file_prefix):
-                    target_name = f"{file_prefix}{original_name}"
-                else:
-                    target_name = original_name
-
-                symlink_target = os.path.join(dest_folder, target_name)
+                filename = os.path.basename(file_path)
+                symlink_target = os.path.join(dest_folder, filename)
 
                 if not os.path.exists(symlink_target):
                     rel_src = os.path.relpath(file_path, dest_folder)
                     os.symlink(rel_src, symlink_target)
-                    self.log(f"Linked: {original_name} ➔ {folder_name}/{target_name}")
+                    self.log(f"Linked: {filename} ➔ {folder_name}/{filename}")
                 else:
-                    self.log(f"Exists: {target_name} in {folder_name}/")
+                    self.log(f"Exists: {filename} in {folder_name}/")
 
                 success_count += 1
 
@@ -194,7 +193,7 @@ class FitsOrganizerTk:
 
         self.log(f"\nDone! Organized {success_count} files into '{base_output}'.")
 
-        # Change button label to "Close" after successful run
+        # Change button label to "Close" after completion
         self.cancel_btn.config(text="Close")
 
 
