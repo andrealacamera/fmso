@@ -46,7 +46,6 @@ To make this script accessible directly from the **Scripts** menu or executable 
    * **Linux**: `~/.config/siril/scripts/` or `~/.local/share/siril/scripts/`
 
    * **macOS**: `~/Library/Application Support/org.siril.Siril/siril-scripts/`
-   ~/Library/Application Support/org.siril.S/Applications/Siril.app/Contents/MacOS/../Resources/share/siril/scriptsiril/scripts
 
    * **Windows**: `%APPDATA%\siril\scripts\`
 
